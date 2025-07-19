@@ -21,7 +21,7 @@ async function open(options) {
     config = await prepare(options);
   }
 
-  if (typeof config.open === "string") {
+  if (typeof config.open === "string" && config.open !== "") {
     console.log(`Opening ${config.next}`);
     await execScript(config.open, { ...options, config });
   }
@@ -43,7 +43,7 @@ async function prepare(options) {
     );
   }
 
-  if (typeof config.prepare === "string") {
+  if (typeof config.prepare === "string" && config.prepare !== "") {
     console.log(`Preparing ${config.next}`);
     await execScript(config.prepare, { ...options, config });
   }
