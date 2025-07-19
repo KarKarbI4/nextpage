@@ -1,4 +1,4 @@
-import { readdir, readFile, stat, writeFile } from "node:fs/promises";
+import { readdir, readFile, stat, writeFile, mkdir } from "node:fs/promises";
 import { basename, dirname, resolve } from "node:path";
 import { cwd } from "node:process";
 
@@ -45,12 +45,37 @@ export async function writeOptions(options) {
   );
 }
 
+const initConfig = {
+  open: "open ./hello.txt",
+  prepare: "",
+};
+
+async function initDotDir() {
+  console.log("Initializing .nextpage");
+  const currentDir = cwd();
+  try {
+    const dotDir = resolve(currentDir, ".nextpage");
+    await mkdir(dotDir);
+    await writeFile(
+      resolve(dotDir, "config.json"),
+      JSON.stringify(initConfig, undefined, 2),
+      { encoding: "utf-8" }
+    );
+    await mkdir(resolve(dotDir, "template"));
+    await writeFile(resolve(dotDir, "template/hello.txt"), "Hello, world!", {
+      encoding: "utf-8",
+    });
+    return dotDir;
+  } catch {
+    throw new Error("Failed to initialize .nextpage");
+  }
+}
+
 async function findDotDir() {
   let currentDir = cwd();
 
   while (currentDir !== "/") {
     const dotDir = resolve(currentDir, ".nextpage");
-
     if ((await stat(dotDir).catch(() => null))?.isDirectory()) {
       return dotDir;
     }
@@ -58,5 +83,5 @@ async function findDotDir() {
     currentDir = dirname(currentDir);
   }
 
-  throw new Error("No .nextpage dir found");
+  return await initDotDir();
 }
